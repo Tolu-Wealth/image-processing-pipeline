@@ -1,0 +1,47 @@
+
+{
+  "Comment": "Serverless Image Processing Pipeline",
+  "StartAt": "ResizeImage",
+  "States": {
+    "ResizeImage": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:ca-central-1:140986930126:function:ImageResizeFunction",
+        "Payload.$": "$"
+      },
+      "ResultSelector": {
+        "status.$": "$.Payload.status",
+        "message.$": "$.Payload.message",
+        "output_bucket.$": "$.Payload.output_bucket",
+        "output_key.$": "$.Payload.output_key"
+      },
+      "ResultPath": "$.result",
+      "Next": "CheckResult"
+    },
+    "CheckResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.result.status",
+          "StringEquals": "SUCCESS",
+          "Next": "Success"
+        },
+        {
+          "Variable": "$.result.status",
+          "StringEquals": "FAILED",
+          "Next": "Failure"
+        }
+      ],
+      "Default": "Failure"
+    },
+    "Success": {
+      "Type": "Succeed"
+    },
+    "Failure": {
+      "Type": "Fail",
+      "Error": "ImageProcessingFailed",
+      "Cause": "The image could not be resized"
+    }
+  }
+}
