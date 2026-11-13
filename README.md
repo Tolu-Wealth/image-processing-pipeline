@@ -17,24 +17,16 @@ The project uses AWS Lambda to process images, AWS Step Functions to coordinate 
 
 ## 3. Project Architecture
 
-The project supports two ways of starting image processing:
+The processing workflow is:
 
-**A. Automatic S3 Upload Trigger**
-
-1. An original image is uploaded to the source S3 bucket.
-2. An S3 ObjectCreated event automatically triggers the Lambda function.
-3. Lambda retrieves the original image.
-4. Pillow resizes the image to a maximum dimension of 200 × 200 pixels.
-5. The resized image is stored in the destination S3 bucket inside the `thumbnails/` folder.
-
-**B. API Gateway and Step Functions**
-
-1. A POST request is sent to the API Gateway endpoint with the source bucket name and image key.
-2. API Gateway starts the Step Functions state machine.
-3. Step Functions invokes the image-resizing Lambda function.
-4. Lambda retrieves and resizes the original image.
-5. The resized image is saved in the destination S3 bucket.
-6. Step Functions checks the processing result and moves to the Success or Failure state.
+An original image is stored in the source S3 bucket.
+A request is sent to the API Gateway endpoint with the source bucket name and image key.
+API Gateway starts the Step Functions state machine.
+Step Functions invokes the ImageResizeFunction Lambda function.
+Lambda retrieves the original image from S3.
+Pillow resizes the image to a maximum dimension of 200 × 200 pixels.
+The resized image is saved in the destination S3 bucket under the thumbnails/ folder.
+Step Functions checks the processing result and reports success or failure.
 
 ## 4. AWS Resources
 
